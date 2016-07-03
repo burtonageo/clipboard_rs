@@ -1,3 +1,5 @@
+extern crate libc;
+
 #[cfg(target_os = "macos")]
 extern crate cocoa;
 
@@ -31,8 +33,13 @@ pub type NativeClipboard = windows_clipboard::WindowsClipboard;
 #[cfg(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd"))]
 pub type NativeClipboard = unix_clipboard::UnixClipboard;
 
+pub enum ClipboardCopy<'a> {
+    Text(&'a str),
+    Other(*mut libc::c_void)
+}
+
 pub trait Clipboard {
-    fn copy(&mut self, text: &str);
+    fn copy(&mut self, item: ClipboardCopy);
     fn get_paste_text(&self) -> &str;
 }
 

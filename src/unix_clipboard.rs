@@ -1,4 +1,5 @@
 use x11_dl::Atom;
+use {Clipboard, ClipboardCopy};
 
 pub struct UnixClipboard;
 
@@ -8,8 +9,8 @@ impl Default for UnixClipboard {
     }
 }
 
-impl ::Clipboard for UnixClipboard {
-    fn copy(&mut self, text: &str) {
+impl Clipboard for UnixClipboard {
+    fn copy(&mut self, item: ClipboardCopy) {
         unimplemented!();
     }
     
