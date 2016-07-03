@@ -1,0 +1,18 @@
+[package]
+name = "clipboard"
+version = "0.1.0"
+authors = ["George Burton <burtonageo@gmail.com>"]
+
+[dependencies]
+libc = "0.2"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+cocoa = { git = "https://github.com/burtonageo/cocoa-rs" }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+winapi = "0.2"
+user32-sys = "0.2"
+kernel32-sys = "0.2"
+
+[target.'cfg(any(target_os = "linux", target_os = "freebsd", target_os="dragonfly", target_os="openbsd"))'.dependencies]
+x11-dl = "2.6"
