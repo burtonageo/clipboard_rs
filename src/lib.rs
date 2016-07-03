@@ -33,6 +33,12 @@ pub type NativeClipboard = windows_clipboard::WindowsClipboard;
 #[cfg(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd"))]
 pub type NativeClipboard = unix_clipboard::UnixClipboard;
 
+pub trait Image {
+    type Error;
+    fn get_bytes(&self) -> &[u8];
+    fn from_bytes(bytes: &[u8]) -> Result<Self, Self::Error> where Self: Sized;
+}
+
 pub enum ClipboardCopy<'a> {
     Text(&'a str),
     Other(*mut libc::c_void)
@@ -46,8 +52,7 @@ pub trait Clipboard {
 #[cfg(all(test, any(target_os = "macos", target_os = "windows", target_os = "linux", target_os = "dragonfly",
                     target_os = "freebsd", target_os = "openbsd")))]
 mod tests {
-    use super::NativeClipboard;
-    use ::Clipboard;
+    use ::{Clipboard, ClipboardCopy, NativeClipboard};
     #[test]
     fn test_native_clipboard() {
         const TEST_TEXT: &'static str = "BoomShakalaka";
@@ -56,10 +61,10 @@ mod tests {
         // Save the current clipboard text
         let current_clipboard_text = clipboard.get_paste_text().to_string();
 
-        clipboard.copy(TEST_TEXT);
+        clipboard.copy(ClipboardCopy::Text(TEST_TEXT));
         assert_eq!(clipboard.get_paste_text(), TEST_TEXT);
 
         // And restore the clipboard to its previous state after the test
-        clipboard.copy(&current_clipboard_text);
+        clipboard.copy(ClipboardCopy::Text(&current_clipboard_text));
     }
 }
