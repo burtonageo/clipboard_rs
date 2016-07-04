@@ -10,7 +10,7 @@ impl Default for UnixClipboard {
 }
 
 impl Clipboard for UnixClipboard {
-    fn copy(&mut self, item: ClipboardCopy) {
+    fn copy(&mut self, item: Item) {
         unimplemented!();
     }
     

@@ -40,14 +40,14 @@ pub trait Image {
     fn from_bytes(bytes: &[u8]) -> Result<Self, Box<Error + Send + Sync>> where Self: Sized;
 }
 
-pub enum ClipboardCopy<'a> {
+pub enum Item<'a> {
     Text(&'a str),
     Image(&'a Image),
     Other(*mut libc::c_void)
 }
 
 pub trait Clipboard {
-    fn copy(&mut self, item: ClipboardCopy);
+    fn copy(&mut self, item: Item);
     fn get_paste_text(&self) -> &str;
 }
 

@@ -2,7 +2,7 @@ use cocoa::appkit::{NSPasteboard, NSPasteboardTypeString};
 use cocoa::base::{id, nil};
 use cocoa::foundation::{NSArray, NSString};
 use std::ffi::CStr;
-use {Clipboard, ClipboardCopy};
+use {Clipboard, Item};
 
 pub trait ClipboardExt {
     fn clipboard_with_name(&self, name: &str) -> Self;
@@ -22,11 +22,11 @@ impl Default for CocoaClipboard {
 }
 
 impl Clipboard for CocoaClipboard {
-    fn copy(&mut self, item: ClipboardCopy) {
+    fn copy(&mut self, item: Item) {
         unsafe {
             let item = match item {
-                ClipboardCopy::Text(ref text) => NSString::alloc(nil).init_str(text),
-                ClipboardCopy::Image(ref _image) => {
+                Item::Text(ref text) => NSString::alloc(nil).init_str(text),
+                Item::Image(ref _image) => {
                     unimplemented!();
                 }
                 _ => return
