@@ -2,7 +2,7 @@ use cocoa::appkit::{NSPasteboard, NSPasteboardTypeString};
 use cocoa::base::{id, nil};
 use cocoa::foundation::{NSArray, NSString};
 use std::ffi::CStr;
-use {Clipboard, Item, StringError};
+use {Clipboard, Item, Result};
 
 pub trait ClipboardExt {
     fn clipboard_with_name(&self, name: &str) -> Self;
@@ -15,20 +15,16 @@ pub trait ClipboardExt {
 pub struct CocoaClipboard(id);
 
 impl Clipboard for CocoaClipboard {
-    type CreateError = StringError;
-    type CopyError = StringError;
-    type PasteError = StringError;
-
-    fn get() -> Result<Self, Self::CreateError> where Self: Sized {
+    fn get() -> Result<Self> where Self: Sized {
         let pboard = unsafe { NSPasteboard::generalPasteboard(nil) };
         if pboard.is_null() {
-            Err(StringError("could not get pasteboard".into()))
+            Err(From::from("could not get pasteboard"))
         } else {
             Ok(CocoaClipboard(pboard))
         }
     }
 
-    fn copy(&mut self, item: Item) -> Result<(), Self::CopyError> {
+    fn copy(&mut self, item: Item) -> Result<()> {
         unsafe {
             let item = match item {
                 Item::Text(ref text) => NSString::alloc(nil).init_str(text),
@@ -45,7 +41,7 @@ impl Clipboard for CocoaClipboard {
         }
     }
 
-    fn get_paste_text(&self)  -> Result<&str, Self::PasteError> {
+    fn get_paste_text(&self)  -> Result<&str> {
         unsafe {
             let text = NSPasteboard::stringForType(self.0, NSPasteboardTypeString);
             Ok(CStr::from_ptr(text.UTF8String()).to_str().unwrap_or(""))

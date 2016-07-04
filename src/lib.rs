@@ -43,11 +43,10 @@ pub type NativeClipboard = unix_clipboard::UnixClipboard;
 pub use unix_clipboard::ClipboardExt;
 
 use std::error::Error;
-use std::fmt;
 
 pub trait Image {
     fn get_bytes(&self) -> &[u8];
-    fn from_bytes(bytes: &[u8]) -> Result<Self, Box<Error + Send + Sync>> where Self: Sized;
+    fn from_bytes(bytes: &[u8]) -> Result<Self> where Self: Sized;
 }
 
 pub enum Item<'a> {
@@ -57,51 +56,12 @@ pub enum Item<'a> {
 }
 
 pub trait Clipboard {
-    type CreateError;
-    type CopyError;
-    type PasteError;
-
-    fn get() -> Result<Self, Self::CreateError> where Self: Sized;
-    fn copy(&mut self, item: Item) -> Result<(), Self::CopyError>;
-    fn get_paste_text(&self) -> Result<&str, Self::PasteError>;
+    fn get() -> Result<Self> where Self: Sized;
+    fn copy(&mut self, item: Item) -> Result<()>;
+    fn get_paste_text(&self) -> Result<&str>;
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct StringError(String);
-
-impl<'a> From<&'a str> for StringError {
-    fn from(s: &'a str) -> Self {
-        StringError(s.into())
-    }
-}
-
-impl fmt::Display for StringError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.pad(&self.0)
-    }
-}
-
-impl Error for StringError {
-    fn description(&self) -> &str {
-        &self.0
-    }
-}
-
-#[derive(Debug)]
-pub enum NoError {}
-
-impl fmt::Display for NoError {
-    fn fmt(&self, _: &mut fmt::Formatter) -> fmt::Result {
-        unreachable!()
-    }
-}
-
-impl Error for NoError {
-    fn description(&self) -> &str {
-        unreachable!()
-    }
-}
-
+pub type Result<T> = ::std::result::Result<T, Box<Error + Send + Sync>>;
 
 #[cfg(all(test, any(target_os = "macos", target_os = "windows", target_os = "linux", target_os = "dragonfly",
                     target_os = "freebsd", target_os = "openbsd")))]

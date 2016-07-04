@@ -1,24 +1,20 @@
 use x11_dl::Atom;
-use {Clipboard, Item, NoError};
+use {Clipboard, Item, Result};
 
 pub trait ClipboardExt { }
 
 pub struct UnixClipboard;
 
 impl Clipboard for UnixClipboard {
-    type CreateError = NoError;
-    type CopyError = NoError;
-    type PasteError = NoError;
-
-    fn get() -> Result<Self, Self::CreateError> where Self: Sized {
+    fn get() -> Result<Self> where Self: Sized {
         unimplemented!();
     }
 
-    fn copy(&mut self, item: Item) -> Result<(), Self::CopyError> {
+    fn copy(&mut self, item: Item) -> Result<()> {
         unimplemented!();
     }
 
-    fn get_paste_text(&self) -> Result<&str, Self::PasteError> {
+    fn get_paste_text(&self) -> Result<&str> {
         unimplemented!();
     }
 }

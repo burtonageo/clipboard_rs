@@ -3,7 +3,7 @@ use std::ptr;
 use kernel32::{GlobalAlloc, GlobalLock, GlobalUnlock};
 use user32::{CloseClipboard, EmptyClipboard, GetClipboardData, OpenClipboard, SetClipboardData};
 use winapi::minwindef::{FALSE, HGLOBAL};
-use {Clipboard, Item, NoError};
+use {Clipboard, Item, Result};
 
 const GMEM_MOVEABLE: usize = 0x0002;
 const CF_UNICODETEXT: usize = 0x000C;
@@ -59,17 +59,13 @@ impl Drop for GlobalLockGuard {
 }
 
 impl Clipboard for WindowsClipboard {
-    type CreateError = NoError;
-    type CopyError = NoError;
-    type PasteError = NoError;
-
-    fn get() -> Result<Self, Self::CreateError> {
+    fn get() -> Result<Self, Box<Error + Send + Sync>> {
         Ok(WindowsClipboard {
             _priv: ()
         })
     }
 
-    fn copy(&mut self, item: Item) -> Result<(), Self::CopyError> {
+    fn copy(&mut self, item: Item) -> Result<(), Box<Error + Send + Sync>> {
         unsafe {
             let text = match item {
                 Item::Text(ref t) => t,
@@ -87,7 +83,7 @@ impl Clipboard for WindowsClipboard {
         }
     }
 
-    fn get_paste_text(&self) -> Result<&str, Self::PasteError> {
+    fn get_paste_text(&self) -> Result<&str, Box<Error + Send + Sync>> {
         use std::slice;
         unsafe {
             let _guard = ClipboardGuard::default();
