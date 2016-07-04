@@ -45,7 +45,7 @@ pub use unix_clipboard::ClipboardExt;
 use std::error::Error;
 
 pub trait Image {
-    fn get_bytes(&self) -> &[u8];
+    fn bytes(&self) -> &[u8];
     fn from_bytes(bytes: &[u8]) -> Result<Self> where Self: Sized;
 }
 
