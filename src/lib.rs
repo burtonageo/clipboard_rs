@@ -24,6 +24,10 @@ mod windows_clipboard;
 #[cfg(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd"))]
 mod unix_clipboard;
 
+#[cfg(not(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd",
+              target_os = "windows", target_os = "macos")))]
+mod dummy_clipboard;
+
 #[cfg(target_os = "macos")]
 pub type NativeClipboard = mac_clipboard::CocoaClipboard;
 
@@ -41,6 +45,14 @@ pub type NativeClipboard = unix_clipboard::UnixClipboard;
 
 #[cfg(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd"))]
 pub use unix_clipboard::ClipboardExt;
+
+#[cfg(not(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd",
+              target_os = "windows", target_os = "macos")))]
+pub type NativeClipboard = dummy_clipboard::DummyClipboard;
+
+#[cfg(not(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd",
+              target_os = "windows", target_os = "macos")))]
+pub use dummy_clipboard::ClipboardExt;
 
 use std::error::Error;
 
