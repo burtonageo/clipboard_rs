@@ -2,11 +2,49 @@ use std::ffi::CStr;
 use std::ptr;
 use kernel32::{GlobalAlloc, GlobalLock, GlobalUnlock};
 use user32::{CloseClipboard, EmptyClipboard, GetClipboardData, OpenClipboard, SetClipboardData};
-use winapi::minwindef::{FALSE, HGLOBAL};
+use winapi::minwindef::{FALSE, HGLOBAL, UINT};
 use {Clipboard, Item, Result};
 
-const GMEM_MOVEABLE: usize = 0x0002;
-const CF_UNICODETEXT: usize = 0x000C;
+bitflags! {
+    pub flags GlobalAllocFlags: UINT {
+        const GHND = GMEM_MOVEABLE | GMEM_ZEROINIT,
+        const GMEM_FIXED = 0x0000,
+        const GMEM_MOVEABLE = 0x0002,
+        const GMEM_ZEROINIT = 0x0040,
+        const GPTR = GMEM_FIXED | GMEM_ZEROINIT
+    }
+}
+
+#[repr(u32)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum ClipboardFormats {
+    CF_BITMAP = 0x0002,
+    CF_DIB = 0x0008,
+    CF_DIBV5 = 0x0011,
+    CF_DIF = 0x0005,
+    CF_DSPBITMAP = 0x0082,
+    CF_DSPENHMETAFILE = 0x008E,
+    CF_DSPMETAFILEPICT = 0x0083,
+    CF_DSPTEXT = 0x0081,
+    CF_ENHMETAFILE = 0x0E,
+    CF_GDIOBJFIRST = 0x0300,
+    CF_GDIOBJLAST = 0x03FF,
+    CF_HDROP = 0x000F,
+    CF_LOCALE = 0x0010,
+    CF_METAFILEPICT = 0x0003,
+    CF_OEMTEXT = 0x0007,
+    CF_OWNERDISPLAY = 0x0080,
+    CF_PALETTE = 0x0009,
+    CF_PENDATA = 0x000A,
+    CF_PRIVATEFIRST = 0x0200,
+    CF_PRIVATELAST = 0x02FF,
+    CF_RIFF = 0x000B,
+    CF_SYLK = 0x0004,
+    CF_TEXT = 0x0001,
+    CF_TIFF = 0x0006,
+    CF_UNICODETEXT = 0x000C,
+    CF_WAVE = 0x000D
+}
 
 pub trait ClipboardExt: Clipboard { }
 
@@ -78,7 +116,7 @@ impl Clipboard for WindowsClipboard {
 
             let empty_result = EmptyClipboard();
             assert!(empty_result != FALSE);
-            SetClipboardData(CF_UNICODETEXT, clip_buf);
+            SetClipboardData(ClipboardFormats::CF_UNICODETEXT as UINT, clip_buf);
             Ok(())
         }
     }
