@@ -27,11 +27,20 @@ mod unix_clipboard;
 #[cfg(target_os = "macos")]
 pub type NativeClipboard = mac_clipboard::CocoaClipboard;
 
+#[cfg(target_os = "macos")]
+pub use mac_clipboard::ClipboardExt;
+
 #[cfg(target_os = "windows")]
 pub type NativeClipboard = windows_clipboard::WindowsClipboard;
 
+#[cfg(target_os = "windows")]
+pub use windows_clipboard::ClipboardExt;
+
 #[cfg(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd"))]
 pub type NativeClipboard = unix_clipboard::UnixClipboard;
+
+#[cfg(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd"))]
+pub use unix_clipboard::ClipboardExt;
 
 use std::error::Error;
 use std::fmt;

@@ -1,6 +1,8 @@
 use x11_dl::Atom;
 use {Clipboard, Item, NoError};
 
+pub trait ClipboardExt { }
+
 pub struct UnixClipboard;
 
 impl Clipboard for UnixClipboard {

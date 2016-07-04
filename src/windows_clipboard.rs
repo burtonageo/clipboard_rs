@@ -8,6 +8,8 @@ use {Clipboard, Item, NoError};
 const GMEM_MOVEABLE: usize = 0x0002;
 const CF_UNICODETEXT: usize = 0x000C;
 
+pub trait ClipboardExt { }
+
 #[derive(Debug)]
 pub struct WindowsClipboard {
     _priv: ()
