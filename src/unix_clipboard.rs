@@ -1,20 +1,22 @@
 use x11_dl::Atom;
-use {Clipboard, ClipboardCopy};
+use {Clipboard, Item, NoError};
 
 pub struct UnixClipboard;
 
-impl Default for UnixClipboard {
-    fn default() -> Self {
-        unimplemented!();
-    }
-}
-
 impl Clipboard for UnixClipboard {
-    fn copy(&mut self, item: Item) {
+    type CreateError = NoError;
+    type CopyError = NoError;
+    type PasteError = NoError;
+
+    fn get() -> Result<Self, Self::CreateError> where Self: Sized {
         unimplemented!();
     }
-    
-    fn get_paste_text(&self) -> &str {
+
+    fn copy(&mut self, item: Item) -> Result<(), Self::CopyError> {
+        unimplemented!();
+    }
+
+    fn get_paste_text(&self) -> Result<&str, Self::PasteError> {
         unimplemented!();
     }
 }

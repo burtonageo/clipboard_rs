@@ -3,21 +3,14 @@ use std::ptr;
 use kernel32::{GlobalAlloc, GlobalLock, GlobalUnlock};
 use user32::{CloseClipboard, EmptyClipboard, GetClipboardData, OpenClipboard, SetClipboardData};
 use winapi::minwindef::{FALSE, HGLOBAL};
-use {Clipboard, Item};
+use {Clipboard, Item, NoError};
 
 const GMEM_MOVEABLE: usize = 0x0002;
 const CF_UNICODETEXT: usize = 0x000C;
 
+#[derive(Debug)]
 pub struct WindowsClipboard {
     _priv: ()
-}
-
-impl Default for WindowsClipboard {
-    fn default() -> Self {
-        WindowsClipboard {
-            _priv: ()
-        }
-    }
 }
 
 struct ClipboardGuard;
@@ -64,11 +57,21 @@ impl Drop for GlobalLockGuard {
 }
 
 impl Clipboard for WindowsClipboard {
-    fn copy(&mut self, item: Item) {
+    type CreateError = NoError;
+    type CopyError = NoError;
+    type PasteError = NoError;
+
+    fn get() -> Result<Self, Self::CreateError> {
+        Ok(WindowsClipboard {
+            _priv: ()
+        })
+    }
+
+    fn copy(&mut self, item: Item) -> Result<(), Self::CopyError> {
         unsafe {
             let text = match item {
                 Item::Text(ref t) => t,
-                _ => return
+                _ => return Ok(())
             };
             let _guard = ClipboardGuard::default();
 
@@ -78,16 +81,17 @@ impl Clipboard for WindowsClipboard {
             let empty_result = EmptyClipboard();
             assert!(empty_result != FALSE);
             SetClipboardData(CF_UNICODETEXT, clip_buf);
+            Ok(())
         }
     }
 
-    fn get_paste_text(&self) -> &str {
+    fn get_paste_text(&self) -> Result<&str, Self::PasteError> {
         use std::slice;
         unsafe {
             let _guard = ClipboardGuard::default();
             let clip_buf = GlobalLockGuard::new(GetClipboardData(CF_UNICODETEXT));
 
-            CStr::from_ptr(clip_buf.get()).to_str().unwrap_or("")
+            Ok(CStr::from_ptr(clip_buf.get()).to_str().unwrap_or(""))
         }
     }
 }

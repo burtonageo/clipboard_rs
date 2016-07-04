@@ -34,6 +34,7 @@ pub type NativeClipboard = windows_clipboard::WindowsClipboard;
 pub type NativeClipboard = unix_clipboard::UnixClipboard;
 
 use std::error::Error;
+use std::fmt;
 
 pub trait Image {
     fn get_bytes(&self) -> &[u8];
@@ -47,26 +48,68 @@ pub enum Item<'a> {
 }
 
 pub trait Clipboard {
-    fn copy(&mut self, item: Item);
-    fn get_paste_text(&self) -> &str;
+    type CreateError;
+    type CopyError;
+    type PasteError;
+
+    fn get() -> Result<Self, Self::CreateError> where Self: Sized;
+    fn copy(&mut self, item: Item) -> Result<(), Self::CopyError>;
+    fn get_paste_text(&self) -> Result<&str, Self::PasteError>;
 }
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct StringError(String);
+
+impl<'a> From<&'a str> for StringError {
+    fn from(s: &'a str) -> Self {
+        StringError(s.into())
+    }
+}
+
+impl fmt::Display for StringError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.pad(&self.0)
+    }
+}
+
+impl Error for StringError {
+    fn description(&self) -> &str {
+        &self.0
+    }
+}
+
+#[derive(Debug)]
+pub enum NoError {}
+
+impl fmt::Display for NoError {
+    fn fmt(&self, _: &mut fmt::Formatter) -> fmt::Result {
+        unreachable!()
+    }
+}
+
+impl Error for NoError {
+    fn description(&self) -> &str {
+        unreachable!()
+    }
+}
+
 
 #[cfg(all(test, any(target_os = "macos", target_os = "windows", target_os = "linux", target_os = "dragonfly",
                     target_os = "freebsd", target_os = "openbsd")))]
 mod tests {
-    use ::{Clipboard, ClipboardCopy, NativeClipboard};
+    use ::{Clipboard, Item, NativeClipboard};
     #[test]
     fn test_native_clipboard() {
         const TEST_TEXT: &'static str = "BoomShakalaka";
-        let mut clipboard = NativeClipboard::default();
+        let mut clipboard = NativeClipboard::get().unwrap();
 
         // Save the current clipboard text
-        let current_clipboard_text = clipboard.get_paste_text().to_string();
+        let current_clipboard_text = clipboard.get_paste_text().unwrap().to_string();
 
-        clipboard.copy(ClipboardCopy::Text(TEST_TEXT));
-        assert_eq!(clipboard.get_paste_text(), TEST_TEXT);
+        clipboard.copy(Item::Text(TEST_TEXT)).unwrap();
+        assert_eq!(clipboard.get_paste_text().unwrap(), TEST_TEXT);
 
         // And restore the clipboard to its previous state after the test
-        clipboard.copy(ClipboardCopy::Text(&current_clipboard_text));
+        clipboard.copy(Item::Text(&current_clipboard_text)).unwrap();
     }
 }

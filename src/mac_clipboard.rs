@@ -2,7 +2,7 @@ use cocoa::appkit::{NSPasteboard, NSPasteboardTypeString};
 use cocoa::base::{id, nil};
 use cocoa::foundation::{NSArray, NSString};
 use std::ffi::CStr;
-use {Clipboard, Item};
+use {Clipboard, Item, StringError};
 
 pub trait ClipboardExt {
     fn clipboard_with_name(&self, name: &str) -> Self;
@@ -11,37 +11,44 @@ pub trait ClipboardExt {
     fn get_raw_clipboard(&self) -> id;
 }
 
+#[derive(Debug)]
 pub struct CocoaClipboard(id);
 
-impl Default for CocoaClipboard {
-    fn default() -> Self {
-        let pboard = unsafe { NSPasteboard::generalPasteboard(nil) };
-        assert!(pboard != nil);
-        CocoaClipboard(pboard)
-    }
-}
-
 impl Clipboard for CocoaClipboard {
-    fn copy(&mut self, item: Item) {
+    type CreateError = StringError;
+    type CopyError = StringError;
+    type PasteError = StringError;
+
+    fn get() -> Result<Self, Self::CreateError> where Self: Sized {
+        let pboard = unsafe { NSPasteboard::generalPasteboard(nil) };
+        if pboard.is_null() {
+            Err(StringError("could not get pasteboard".into()))
+        } else {
+            Ok(CocoaClipboard(pboard))
+        }
+    }
+
+    fn copy(&mut self, item: Item) -> Result<(), Self::CopyError> {
         unsafe {
             let item = match item {
                 Item::Text(ref text) => NSString::alloc(nil).init_str(text),
                 Item::Image(ref _image) => {
                     unimplemented!();
                 }
-                _ => return
+                _ => return Ok(())
             };
 
             self.0.clearContents();
             self.0.declareTypes_owner(NSArray::arrayWithObject(nil, NSPasteboardTypeString), nil);
             NSPasteboard::setString_forType(self.0, item, NSPasteboardTypeString);
+            Ok(())
         }
     }
 
-    fn get_paste_text(&self) -> &str {
+    fn get_paste_text(&self)  -> Result<&str, Self::PasteError> {
         unsafe {
             let text = NSPasteboard::stringForType(self.0, NSPasteboardTypeString);
-            CStr::from_ptr(text.UTF8String()).to_str().unwrap_or("")
+            Ok(CStr::from_ptr(text.UTF8String()).to_str().unwrap_or(""))
         }
     }
 }
