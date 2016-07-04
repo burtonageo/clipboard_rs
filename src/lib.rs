@@ -33,14 +33,16 @@ pub type NativeClipboard = windows_clipboard::WindowsClipboard;
 #[cfg(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd"))]
 pub type NativeClipboard = unix_clipboard::UnixClipboard;
 
+use std::error::Error;
+
 pub trait Image {
-    type Error;
     fn get_bytes(&self) -> &[u8];
-    fn from_bytes(bytes: &[u8]) -> Result<Self, Self::Error> where Self: Sized;
+    fn from_bytes(bytes: &[u8]) -> Result<Self, Box<Error + Send + Sync>> where Self: Sized;
 }
 
 pub enum ClipboardCopy<'a> {
     Text(&'a str),
+    Image(&'a Image),
     Other(*mut libc::c_void)
 }
 

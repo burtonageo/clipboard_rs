@@ -24,15 +24,17 @@ impl Default for CocoaClipboard {
 impl Clipboard for CocoaClipboard {
     fn copy(&mut self, item: ClipboardCopy) {
         unsafe {
-            let text = match item {
-                ClipboardCopy::Text(ref t) => t,
+            let item = match item {
+                ClipboardCopy::Text(ref text) => NSString::alloc(nil).init_str(text),
+                ClipboardCopy::Image(ref _image) => {
+                    unimplemented!();
+                }
                 _ => return
             };
 
             self.0.clearContents();
-            let nsstr = NSString::alloc(nil).init_str(text);
             self.0.declareTypes_owner(NSArray::arrayWithObject(nil, NSPasteboardTypeString), nil);
-            NSPasteboard::setString_forType(self.0, nsstr, NSPasteboardTypeString);
+            NSPasteboard::setString_forType(self.0, item, NSPasteboardTypeString);
         }
     }
 
