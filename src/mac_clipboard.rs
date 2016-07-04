@@ -52,3 +52,17 @@ impl Clipboard for CocoaClipboard {
         }
     }
 }
+
+impl ClipboardExt for CocoaClipboard {
+    fn clipboard_with_name(&self, name: &str) -> Self {
+        unimplemented!();
+    }
+
+    fn get_clipboard_text_as_nsstring(&self) -> id {
+        unimplemented!();
+    }
+
+    fn get_raw_clipboard(&self) -> id {
+        unimplemented!();
+    }
+}

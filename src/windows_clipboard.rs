@@ -131,3 +131,5 @@ impl Clipboard for WindowsClipboard {
         }
     }
 }
+
+impl ClipboardExt for WindowsClipboard { }

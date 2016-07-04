@@ -18,3 +18,5 @@ impl Clipboard for UnixClipboard {
         unimplemented!();
     }
 }
+
+impl ClipboardExt for UnixClipboard { }
