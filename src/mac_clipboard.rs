@@ -1,6 +1,6 @@
 use cocoa::appkit::{NSPasteboard, NSPasteboardTypeString};
 use cocoa::base::{id, nil};
-use cocoa::foundation::{NSArray, NSString};
+use cocoa::foundation::{NSArray, NSData, NSString, NSUInteger};
 use std::ffi::CStr;
 use {Clipboard, Item, Result};
 
@@ -28,7 +28,11 @@ impl Clipboard for CocoaClipboard {
         unsafe {
             let item = match item {
                 Item::Text(ref text) => NSString::alloc(nil).init_str(text),
-                Item::Image(ref _image) => {
+                Item::Image(ref image) => {
+                    let slice = image.bytes();
+                    let _data = NSData::dataWithBytes_length_(nil,
+                                                              slice.as_ptr() as *const _,
+                                                              slice.len() as NSUInteger);
                     unimplemented!();
                 }
                 _ => return Ok(())
