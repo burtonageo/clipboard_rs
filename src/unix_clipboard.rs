@@ -1,7 +1,7 @@
 use x11_dl::Atom;
 use {Clipboard, Item, Result};
 
-pub trait ClipboardExt { }
+pub trait ClipboardExt: Clipboard { }
 
 pub struct UnixClipboard;
 
