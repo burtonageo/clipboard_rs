@@ -25,7 +25,7 @@ impl Clipboard for CocoaClipboard {
         }
     }
 
-    fn copy(&mut self, item: Item) -> Result<()> {
+    fn copy(&mut self, item: &Item) -> Result<()> {
         unsafe {
             let item = item.native_representation();
             if item.is_null() {
@@ -39,7 +39,7 @@ impl Clipboard for CocoaClipboard {
         }
     }
 
-    fn copy_items(&mut self, items: Vec<Item>) -> Result<()> {
+    fn copy_items(&mut self, items: &[Item]) -> Result<()> {
         let items = items.iter().map(|i| i.native_representation()).collect::<Cow<[_]>>();
         let array = unsafe { NSArray::arrayWithObjects(nil, &items) };
         unsafe {

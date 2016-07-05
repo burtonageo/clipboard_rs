@@ -103,9 +103,9 @@ impl Clipboard for WindowsClipboard {
         })
     }
 
-    fn copy(&mut self, item: Item) -> Result<(), Box<Error + Send + Sync>> {
+    fn copy(&mut self, item: &Item) -> Result<(), Box<Error + Send + Sync>> {
         unsafe {
-            let text = match item {
+            let text = match *item {
                 Item::Text(ref t) => t,
                 _ => return Ok(())
             };
@@ -121,7 +121,7 @@ impl Clipboard for WindowsClipboard {
         }
     }
 
-    fn copy_items(&mut self, items: Vec<Item>) -> Result<()> {
+    fn copy_items(&mut self, items: &[Item]) -> Result<()> {
         unimplemented!();
     }
 

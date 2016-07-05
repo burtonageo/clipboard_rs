@@ -30,8 +30,13 @@ impl Clipboard for DummyClipboard {
         })
     }
 
-    fn copy(&mut self, item: Item) -> Result<()> {
+    fn copy(&mut self, item: &Item) -> Result<()> {
         debug_println!("calling DummyClipboard::copy(): this operation is not available");
+        Ok(())
+    }
+
+    fn copy_items(&mut self, items: &[Item]) -> Result<()> {
+        debug_println!("calling DummyClipboard::copy_items(): this operation is not available");
         Ok(())
     }
 

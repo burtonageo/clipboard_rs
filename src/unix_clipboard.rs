@@ -10,11 +10,11 @@ impl Clipboard for UnixClipboard {
         unimplemented!();
     }
 
-    fn copy(&mut self, item: Item) -> Result<()> {
+    fn copy(&mut self, item: &Item) -> Result<()> {
         unimplemented!();
     }
 
-    fn copy_items(&mut self, items: Vec<Item>) -> Result<()> {
+    fn copy_items(&mut self, items: &[Item]) -> Result<()> {
         unimplemented!();
     }
 
