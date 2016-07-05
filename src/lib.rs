@@ -77,6 +77,7 @@ pub enum Item<'a> {
 pub trait Clipboard {
     fn get() -> Result<Self> where Self: Sized;
     fn copy(&mut self, item: Item) -> Result<()>;
+    fn copy_items(&mut self, items: Vec<Item>) -> Result<()>;
     fn get_paste_text(&self) -> Result<&str>;
 }
 

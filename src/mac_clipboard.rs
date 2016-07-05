@@ -45,6 +45,10 @@ impl Clipboard for CocoaClipboard {
         }
     }
 
+    fn copy_items(&mut self, items: Vec<Item>) -> Result<()> {
+        unimplemented!();
+    }
+
     fn get_paste_text(&self)  -> Result<&str> {
         unsafe {
             let text = NSPasteboard::stringForType(self.0, NSPasteboardTypeString);

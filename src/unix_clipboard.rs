@@ -14,6 +14,10 @@ impl Clipboard for UnixClipboard {
         unimplemented!();
     }
 
+    fn copy_items(&mut self, items: Vec<Item>) -> Result<()> {
+        unimplemented!();
+    }
+
     fn get_paste_text(&self) -> Result<&str> {
         unimplemented!();
     }

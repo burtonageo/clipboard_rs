@@ -121,6 +121,10 @@ impl Clipboard for WindowsClipboard {
         }
     }
 
+    fn copy_items(&mut self, items: Vec<Item>) -> Result<()> {
+        unimplemented!();
+    }
+
     fn get_paste_text(&self) -> Result<&str, Box<Error + Send + Sync>> {
         use std::slice;
         unsafe {
