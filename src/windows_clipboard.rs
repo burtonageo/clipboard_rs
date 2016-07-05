@@ -134,6 +134,10 @@ impl Clipboard for WindowsClipboard {
             Ok(CStr::from_ptr(clip_buf.get()).to_str().unwrap_or(""))
         }
     }
+
+    fn get_items(&self) -> &[Item] {
+        unimplemented!();
+    }
 }
 
 impl ClipboardExt for WindowsClipboard { }

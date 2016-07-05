@@ -44,6 +44,11 @@ impl Clipboard for DummyClipboard {
         debug_println!("calling DummyClipboard::paste(): this operation is not available");
         Ok("")
     }
+
+    fn get_items(&self) -> &[Item] {
+        debug_println!("calling DummyClipboard::get_items(): this operation is not available");
+        Ok([])
+    }
 }
 
 impl ClipboardExt for DummyClipboard { }

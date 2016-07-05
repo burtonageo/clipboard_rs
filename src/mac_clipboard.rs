@@ -26,17 +26,7 @@ impl Clipboard for CocoaClipboard {
     }
 
     fn copy(&mut self, item: &Item) -> Result<()> {
-        unsafe {
-            let item = item.native_representation();
-            if item.is_null() {
-                return Ok(())
-            }
-
-            self.0.clearContents();
-            self.0.declareTypes_owner(NSArray::arrayWithObject(nil, NSPasteboardTypeString), nil);
-            NSPasteboard::setString_forType(self.0, item, NSPasteboardTypeString);
-            Ok(())
-        }
+        self.copy_items(&[*item])
     }
 
     fn copy_items(&mut self, items: &[Item]) -> Result<()> {
@@ -54,6 +44,10 @@ impl Clipboard for CocoaClipboard {
             let text = NSPasteboard::stringForType(self.0, NSPasteboardTypeString);
             Ok(CStr::from_ptr(text.UTF8String()).to_str().unwrap_or(""))
         }
+    }
+
+    fn get_items(&self) -> &[Item] {
+        unimplemented!();
     }
 }
 

@@ -67,6 +67,7 @@ pub trait Sound {
     fn from_bytes(bytes: &[u8]) -> Result<Self> where Self: Sized;
 }
 
+#[derive(Clone, Copy)]
 pub enum Item<'a> {
     Text(&'a str),
     Image(&'a Image),
@@ -79,6 +80,7 @@ pub trait Clipboard {
     fn copy(&mut self, item: &Item) -> Result<()>;
     fn copy_items(&mut self, items: &[Item]) -> Result<()>;
     fn get_paste_text(&self) -> Result<&str>;
+    fn get_items(&self) -> &[Item];
 }
 
 pub type Result<T> = ::std::result::Result<T, Box<Error + Send + Sync>>;

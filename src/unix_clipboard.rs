@@ -21,6 +21,10 @@ impl Clipboard for UnixClipboard {
     fn get_paste_text(&self) -> Result<&str> {
         unimplemented!();
     }
+
+    fn get_items(&self) -> &[Item] {
+        unimplemented!();
+    }
 }
 
 impl ClipboardExt for UnixClipboard { }
