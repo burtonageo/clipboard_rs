@@ -61,9 +61,16 @@ pub trait Image {
     fn from_bytes(bytes: &[u8]) -> Result<Self> where Self: Sized;
 }
 
+pub trait Sound {
+    fn bytes(&self) -> &[u8];
+    fn is_wav(&self) -> bool;
+    fn from_bytes(bytes: &[u8]) -> Result<Self> where Self: Sized;
+}
+
 pub enum Item<'a> {
     Text(&'a str),
     Image(&'a Image),
+    Sound(&'a Sound),
     Other(*mut libc::c_void)
 }
 
