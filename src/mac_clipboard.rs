@@ -1,6 +1,7 @@
 use cocoa::appkit::{NSPasteboard, NSPasteboardTypeString};
 use cocoa::base::{id, nil};
 use cocoa::foundation::{NSArray, NSData, NSString, NSUInteger};
+use std::borrow::Cow;
 use std::ffi::CStr;
 use {Clipboard, Item, Result};
 
@@ -26,17 +27,10 @@ impl Clipboard for CocoaClipboard {
 
     fn copy(&mut self, item: Item) -> Result<()> {
         unsafe {
-            let item = match item {
-                Item::Text(ref text) => NSString::alloc(nil).init_str(text),
-                Item::Image(ref image) => {
-                    let slice = image.bytes();
-                    let _data = NSData::dataWithBytes_length_(nil,
-                                                              slice.as_ptr() as *const _,
-                                                              slice.len() as NSUInteger);
-                    unimplemented!();
-                }
-                _ => return Ok(())
-            };
+            let item = item.native_representation();
+            if item.is_null() {
+                return Ok(())
+            }
 
             self.0.clearContents();
             self.0.declareTypes_owner(NSArray::arrayWithObject(nil, NSPasteboardTypeString), nil);
@@ -46,7 +40,13 @@ impl Clipboard for CocoaClipboard {
     }
 
     fn copy_items(&mut self, items: Vec<Item>) -> Result<()> {
-        unimplemented!();
+        let items = items.iter().map(|i| i.native_representation()).collect::<Cow<[_]>>();
+        let array = unsafe { NSArray::arrayWithObjects(nil, &items) };
+        unsafe {
+            self.0.clearContents();
+            self.0.writeObjects(array);
+        }
+        Ok(())
     }
 
     fn get_paste_text(&self)  -> Result<&str> {
@@ -68,5 +68,24 @@ impl ClipboardExt for CocoaClipboard {
 
     fn get_raw_clipboard(&self) -> id {
         unimplemented!();
+    }
+}
+
+impl<'a> Item<'a> {
+    fn native_representation(&self) -> id {
+        match *self {
+            Item::Text(text) => unsafe { NSString::alloc(nil).init_str(text) },
+            Item::Image(image) => unsafe {
+                let slice = image.bytes();
+                let _data = NSData::dataWithBytes_length_(nil,
+                                                          slice.as_ptr() as *const _,
+                                                          slice.len() as NSUInteger);
+                unimplemented!();
+            },
+            Item::Sound(sound) => {
+                unimplemented!();
+            }
+            _ => nil
+        }
     }
 }
