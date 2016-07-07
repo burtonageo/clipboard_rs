@@ -97,10 +97,10 @@ mod tests {
         // Save the current clipboard text
         let current_clipboard_text = clipboard.get_paste_text().unwrap().to_string();
 
-        clipboard.copy(Item::Text(TEST_TEXT)).unwrap();
+        clipboard.copy(&Item::Text(TEST_TEXT)).unwrap();
         assert_eq!(clipboard.get_paste_text().unwrap(), TEST_TEXT);
 
         // And restore the clipboard to its previous state after the test
-        clipboard.copy(Item::Text(&current_clipboard_text)).unwrap();
+        clipboard.copy(&Item::Text(&current_clipboard_text)).unwrap();
     }
 }
