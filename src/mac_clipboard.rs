@@ -7,8 +7,7 @@ use {Clipboard, Item, Result};
 
 pub trait ClipboardExt: Clipboard {
     fn clipboard_with_name(&self, name: &str) -> Self;
-
-    fn get_clipboard_text_as_nsstring(&self) -> id;
+    fn get_items_nsarray(&self) -> id;
     fn get_raw_clipboard(&self) -> id;
 }
 
@@ -47,7 +46,10 @@ impl Clipboard for CocoaClipboard {
     }
 
     fn get_items(&self) -> &[Item] {
-        unimplemented!();
+        unsafe {
+            let items = self.0.pasteboardItems();
+            unimplemented!();
+        }
     }
 }
 
@@ -56,7 +58,7 @@ impl ClipboardExt for CocoaClipboard {
         unimplemented!();
     }
 
-    fn get_clipboard_text_as_nsstring(&self) -> id {
+    fn get_items_nsarray(&self) -> id {
         unimplemented!();
     }
 
