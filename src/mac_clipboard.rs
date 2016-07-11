@@ -1,6 +1,6 @@
 use cocoa::appkit::{NSPasteboard, NSPasteboardTypeString};
 use cocoa::base::{id, nil};
-use cocoa::foundation::{NSArray, NSData, NSString, NSUInteger};
+use cocoa::foundation::{NSArray, NSData, NSFastEnumeration, NSString, NSUInteger};
 use std::borrow::Cow;
 use std::ffi::CStr;
 use {Clipboard, Item, Result};
@@ -45,10 +45,12 @@ impl Clipboard for CocoaClipboard {
         }
     }
 
-    fn get_items(&self) -> &[Item] {
+    fn get_items(&self) -> Cow<[Item]> {
         unsafe {
-            let items = self.0.pasteboardItems();
-            unimplemented!();
+            self.0.pasteboardItems()
+                  .iter()
+                  .map(|x| Item::Text(""))
+                  .collect()
         }
     }
 }

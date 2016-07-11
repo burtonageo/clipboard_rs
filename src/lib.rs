@@ -54,6 +54,7 @@ pub type NativeClipboard = dummy_clipboard::DummyClipboard;
               target_os = "windows", target_os = "macos")))]
 pub use dummy_clipboard::ClipboardExt;
 
+use std::borrow::Cow;
 use std::error::Error;
 
 pub trait Image {
@@ -80,7 +81,7 @@ pub trait Clipboard {
     fn copy(&mut self, item: &Item) -> Result<()>;
     fn copy_items(&mut self, items: &[Item]) -> Result<()>;
     fn get_paste_text(&self) -> Result<&str>;
-    fn get_items(&self) -> &[Item];
+    fn get_items(&self) -> Cow<[Item]>;
 }
 
 pub type Result<T> = ::std::result::Result<T, Box<Error + Send + Sync>>;
