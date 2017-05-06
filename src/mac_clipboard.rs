@@ -65,7 +65,7 @@ impl ClipboardExt for CocoaClipboard {
     }
 
     fn get_raw_clipboard(&self) -> id {
-        unimplemented!();
+        self.0
     }
 }
 
