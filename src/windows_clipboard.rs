@@ -57,7 +57,7 @@ struct ClipboardGuard;
 impl Default for ClipboardGuard {
     fn default() -> Self {
         let result = OpenClipboard(ptr::null_mut());
-        assert!(result != FALSE);
+        assert_ne!(result, FALSE);
         ClipboardGuard
     }
 }
@@ -75,9 +75,9 @@ struct GlobalLockGuard {
 
 impl GlobalLockGuard {
     fn new(data: HANDLE) -> Self {
-        assert!(data != ptr::null_mut());
+        assert_ne!(data, ptr::null_mut());
         let ptr = GlobalLock(data) as *mut u8;
-        assert!(ptr != ptr::null_mut());
+        assert_ne!(ptr, ptr::null_mut());
         GlobalLockGuard {
             data: data,
             ptr: ptr
@@ -115,7 +115,7 @@ impl Clipboard for WindowsClipboard {
             ptr::copy_nonoverlapping(text.as_ptr(), clip_buf.get(), text.len());
 
             let empty_result = EmptyClipboard();
-            assert!(empty_result != FALSE);
+            assert_ne!(empty_result, FALSE);
             SetClipboardData(ClipboardFormats::CF_UNICODETEXT as UINT, clip_buf);
             Ok(())
         }
