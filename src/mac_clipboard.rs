@@ -14,7 +14,7 @@ impl Clipboard {
     pub fn get() -> Result<Self> {
         let pboard = unsafe { NSPasteboard::generalPasteboard(nil) };
         if pboard.is_null() {
-            Err(Error::from("could not get pasteboard").into())
+            Err(From::from("could not get pasteboard"))
         } else {
             Ok(Clipboard(pboard))
         }

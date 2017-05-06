@@ -1,3 +1,4 @@
+#[cfg(any(windows, unix))]
 extern crate libc;
 
 #[cfg(target_os = "macos")]
@@ -60,14 +61,31 @@ impl Clipboard {
     }
 }
 
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum ImageFormat {
+    Jpg,
+    Png,
+}
+
 pub trait Image {
     fn bytes(&self) -> &[u8];
+    fn format(&self) -> ImageFormat;
     fn from_bytes(bytes: &[u8]) -> Result<Self> where Self: Sized;
+}
+
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum SoundFormat {
+    Wav,
+    Aiff,
+    Alac,
+    Flac,
+    Mp3,
+    OggVorbis,
 }
 
 pub trait Sound {
     fn bytes(&self) -> &[u8];
-    fn is_wav(&self) -> bool;
+    fn format(&self) -> SoundFormat;
     fn from_bytes(bytes: &[u8]) -> Result<Self> where Self: Sized;
 }
 
@@ -79,30 +97,7 @@ pub enum Item<'a> {
     Other(*mut libc::c_void),
 }
 
-#[derive(Debug)]
-pub struct Error(inner::Error);
-
-impl From<inner::Error> for Error {
-    #[inline]
-    fn from(e: inner::Error) -> Self {
-        Error(e)
-    }
-}
-
-impl fmt::Display for Error {
-    #[inline]
-    fn fmt(&self, fmtr: &mut fmt::Formatter) -> fmt::Result {
-        unimplemented!()
-    }
-}
-
-impl StdError for Error {
-    fn description(&self) -> &str {
-        "Something bad happened"
-    }
-}
-
-pub type Result<T> = ::std::result::Result<T, self::Error>;
+pub type Result<T> = ::std::result::Result<T, inner::Error>;
 
 #[cfg(all(test, any(unix, windows)))]
 mod tests {
