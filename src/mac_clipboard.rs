@@ -15,7 +15,7 @@ pub trait ClipboardExt: Clipboard {
 pub struct CocoaClipboard(id);
 
 impl Clipboard for CocoaClipboard {
-    fn get() -> Result<Self> where Self: Sized {
+    fn get() -> Result<Self> {
         let pboard = unsafe { NSPasteboard::generalPasteboard(nil) };
         if pboard.is_null() {
             Err(From::from("could not get pasteboard"))
