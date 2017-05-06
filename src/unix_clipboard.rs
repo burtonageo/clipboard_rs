@@ -1,12 +1,14 @@
 use x11_dl::Atom;
 use {Clipboard, Item, Result};
 
-pub trait ClipboardExt: Clipboard { }
+pub trait ClipboardExt: Clipboard {}
 
 pub struct UnixClipboard;
 
 impl Clipboard for UnixClipboard {
-    fn get() -> Result<Self> where Self: Sized {
+    fn get() -> Result<Self>
+        where Self: Sized
+    {
         unimplemented!();
     }
 
@@ -27,4 +29,4 @@ impl Clipboard for UnixClipboard {
     }
 }
 
-impl ClipboardExt for UnixClipboard { }
+impl ClipboardExt for UnixClipboard {}

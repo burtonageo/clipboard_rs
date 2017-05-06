@@ -21,11 +21,18 @@ mod mac_clipboard;
 #[cfg(target_os = "windows")]
 mod windows_clipboard;
 
-#[cfg(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd"))]
+#[cfg(any(target_os = "linux",
+          target_os = "dragonfly",
+          target_os = "freebsd",
+          target_os = "openbsd"))]
 mod unix_clipboard;
 
-#[cfg(not(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd",
-              target_os = "windows", target_os = "macos")))]
+#[cfg(not(any(target_os = "linux",
+              target_os = "dragonfly",
+              target_os = "freebsd",
+              target_os = "openbsd",
+              target_os = "windows",
+              target_os = "macos")))]
 mod dummy_clipboard;
 
 #[cfg(target_os = "macos")]
@@ -40,18 +47,32 @@ pub type NativeClipboard = windows_clipboard::WindowsClipboard;
 #[cfg(target_os = "windows")]
 pub use windows_clipboard::ClipboardExt;
 
-#[cfg(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd"))]
+#[cfg(any(target_os = "linux",
+          target_os = "dragonfly",
+          target_os = "freebsd",
+          target_os = "openbsd"))]
 pub type NativeClipboard = unix_clipboard::UnixClipboard;
 
-#[cfg(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd"))]
+#[cfg(any(target_os = "linux",
+          target_os = "dragonfly",
+          target_os = "freebsd",
+          target_os = "openbsd"))]
 pub use unix_clipboard::ClipboardExt;
 
-#[cfg(not(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd",
-              target_os = "windows", target_os = "macos")))]
+#[cfg(not(any(target_os = "linux",
+              target_os = "dragonfly",
+              target_os = "freebsd",
+              target_os = "openbsd",
+              target_os = "windows",
+              target_os = "macos")))]
 pub type NativeClipboard = dummy_clipboard::DummyClipboard;
 
-#[cfg(not(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd",
-              target_os = "windows", target_os = "macos")))]
+#[cfg(not(any(target_os = "linux",
+              target_os = "dragonfly",
+              target_os = "freebsd",
+              target_os = "openbsd",
+              target_os = "windows",
+              target_os = "macos")))]
 pub use dummy_clipboard::ClipboardExt;
 
 use std::borrow::Cow;
@@ -81,15 +102,19 @@ pub enum Item<'a> {
     Text(&'a str),
     Image(&'a Image),
     Sound(&'a Sound),
-    Other(*mut libc::c_void)
+    Other(*mut libc::c_void),
 }
 
 pub type Result<T> = ::std::result::Result<T, Box<Error + Send + Sync>>;
 
-#[cfg(all(test, any(target_os = "macos", target_os = "windows", target_os = "linux", target_os = "dragonfly",
-                    target_os = "freebsd", target_os = "openbsd")))]
+#[cfg(all(test, any(target_os = "macos",
+                    target_os = "windows",
+                    target_os = "linux",
+                    target_os = "dragonfly",
+                    target_os = "freebsd",
+                    target_os = "openbsd")))]
 mod tests {
-    use ::{Clipboard, Item, NativeClipboard};
+    use {Clipboard, Item, NativeClipboard};
     #[test]
     fn test_native_clipboard() {
         const TEST_TEXT: &'static str = "BoomShakalaka";
@@ -102,6 +127,8 @@ mod tests {
         assert_eq!(clipboard.get_paste_text().unwrap(), TEST_TEXT);
 
         // And restore the clipboard to its previous state after the test
-        clipboard.copy(&Item::Text(&current_clipboard_text)).unwrap();
+        clipboard
+            .copy(&Item::Text(&current_clipboard_text))
+            .unwrap();
     }
 }

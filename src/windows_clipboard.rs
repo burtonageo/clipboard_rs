@@ -43,14 +43,14 @@ enum ClipboardFormats {
     CF_TEXT = 0x0001,
     CF_TIFF = 0x0006,
     CF_UNICODETEXT = 0x000C,
-    CF_WAVE = 0x000D
+    CF_WAVE = 0x000D,
 }
 
-pub trait ClipboardExt: Clipboard { }
+pub trait ClipboardExt: Clipboard {}
 
 #[derive(Debug)]
 pub struct WindowsClipboard {
-    _priv: ()
+    _priv: (),
 }
 
 struct ClipboardGuard;
@@ -70,7 +70,7 @@ impl Drop for ClipboardGuard {
 
 struct GlobalLockGuard {
     data: HANDLE,
-    ptr: *mut u8
+    ptr: *mut u8,
 }
 
 impl GlobalLockGuard {
@@ -80,7 +80,7 @@ impl GlobalLockGuard {
         assert_ne!(ptr, ptr::null_mut());
         GlobalLockGuard {
             data: data,
-            ptr: ptr
+            ptr: ptr,
         }
     }
 
@@ -98,16 +98,14 @@ impl Drop for GlobalLockGuard {
 
 impl Clipboard for WindowsClipboard {
     fn get() -> Result<Self, Box<Error + Send + Sync>> {
-        Ok(WindowsClipboard {
-            _priv: ()
-        })
+        Ok(WindowsClipboard { _priv: () })
     }
 
     fn copy(&mut self, item: &Item) -> Result<(), Box<Error + Send + Sync>> {
         unsafe {
             let text = match *item {
                 Item::Text(ref t) => t,
-                _ => return Ok(())
+                _ => return Ok(()),
             };
             let _guard = ClipboardGuard::default();
 
@@ -140,4 +138,4 @@ impl Clipboard for WindowsClipboard {
     }
 }
 
-impl ClipboardExt for WindowsClipboard { }
+impl ClipboardExt for WindowsClipboard {}

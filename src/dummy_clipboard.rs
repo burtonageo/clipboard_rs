@@ -19,15 +19,13 @@ macro_rules! debug_println {
 pub trait ClipboardExt: Clipboard {}
 
 pub struct DummyClipboard {
-    _priv: ()
+    _priv: (),
 }
 
 impl Clipboard for DummyClipboard {
     fn get() -> Result<Self> {
         debug_println!("Calling DummyClipboard::get()");
-        Ok(DummyClipboard {
-            _priv: ()
-        })
+        Ok(DummyClipboard { _priv: () })
     }
 
     fn copy(&mut self, item: &Item) -> Result<()> {
@@ -51,4 +49,4 @@ impl Clipboard for DummyClipboard {
     }
 }
 
-impl ClipboardExt for DummyClipboard { }
+impl ClipboardExt for DummyClipboard {}

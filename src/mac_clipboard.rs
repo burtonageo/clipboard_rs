@@ -29,7 +29,10 @@ impl Clipboard for CocoaClipboard {
     }
 
     fn copy_items(&mut self, items: &[Item]) -> Result<()> {
-        let items = items.iter().map(|i| i.native_representation()).collect::<Cow<[_]>>();
+        let items = items
+            .iter()
+            .map(|i| i.native_representation())
+            .collect::<Cow<[_]>>();
         let array = unsafe { NSArray::arrayWithObjects(nil, &items) };
         unsafe {
             self.0.clearContents();
@@ -38,7 +41,7 @@ impl Clipboard for CocoaClipboard {
         Ok(())
     }
 
-    fn get_paste_text(&self)  -> Result<&str> {
+    fn get_paste_text(&self) -> Result<&str> {
         unsafe {
             let text = NSPasteboard::stringForType(self.0, NSPasteboardTypeString);
             Ok(CStr::from_ptr(text.UTF8String()).to_str().unwrap_or(""))
@@ -47,10 +50,11 @@ impl Clipboard for CocoaClipboard {
 
     fn get_items(&self) -> Cow<[Item]> {
         unsafe {
-            self.0.pasteboardItems()
-                  .iter()
-                  .map(|x| Item::Text(""))
-                  .collect()
+            self.0
+                .pasteboardItems()
+                .iter()
+                .map(|x| Item::Text(""))
+                .collect()
         }
     }
 }
@@ -83,7 +87,7 @@ impl<'a> Item<'a> {
             Item::Sound(sound) => {
                 unimplemented!();
             }
-            _ => nil
+            _ => nil,
         }
     }
 }
