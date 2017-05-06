@@ -1,32 +1,34 @@
-use x11_dl::Atom;
-use {Clipboard, Item, Result};
+extern crate x11_dl;
 
-pub trait ClipboardExt: Clipboard {}
+use self::x11_dl::Atom;
+use {Clipboard as SuperClipboard, Item, Result};
 
-pub struct UnixClipboard;
+pub struct Clipboard;
 
-impl Clipboard for UnixClipboard {
-    fn get() -> Result<Self>
+impl Clipboard {
+    pub fn get() -> Result<Self>
         where Self: Sized
     {
         unimplemented!();
     }
 
-    fn copy(&mut self, item: &Item) -> Result<()> {
+    pub fn copy(&mut self, item: &Item) -> Result<()> {
         unimplemented!();
     }
 
-    fn copy_items(&mut self, items: &[Item]) -> Result<()> {
+    pub fn copy_items(&mut self, items: &[Item]) -> Result<()> {
         unimplemented!();
     }
 
-    fn get_paste_text(&self) -> Result<&str> {
+    pub fn get_paste_text(&self) -> Result<&str> {
         unimplemented!();
     }
 
-    fn get_items(&self) -> &[Item] {
+    pub fn get_items(&self) -> &[Item] {
         unimplemented!();
     }
 }
 
-impl ClipboardExt for UnixClipboard {}
+pub trait ClipboardExt: Clipboard {}
+
+impl ClipboardExt for SuperClipboard {}

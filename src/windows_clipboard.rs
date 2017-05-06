@@ -1,9 +1,13 @@
+extern crate winapi;
+extern crate user32;
+extern crate kernel32;
+
 use std::ffi::CStr;
 use std::ptr;
-use kernel32::{GlobalAlloc, GlobalLock, GlobalUnlock};
-use user32::{CloseClipboard, EmptyClipboard, GetClipboardData, OpenClipboard, SetClipboardData};
-use winapi::minwindef::{FALSE, HGLOBAL, UINT};
-use {Clipboard, Item, Result};
+use self::kernel32::{GlobalAlloc, GlobalLock, GlobalUnlock};
+use self::user32::{CloseClipboard, EmptyClipboard, GetClipboardData, OpenClipboard, SetClipboardData};
+use self::winapi::minwindef::{FALSE, HGLOBAL, UINT};
+use {Clipboard as SuperClipboard, Item, Result};
 
 bitflags! {
     flags GlobalAllocFlags: UINT {
@@ -46,14 +50,59 @@ enum ClipboardFormats {
     CF_WAVE = 0x000D,
 }
 
-pub trait ClipboardExt: Clipboard {}
-
 #[derive(Debug)]
-pub struct WindowsClipboard {
+pub struct Clipboard {
     _priv: (),
 }
 
+impl Clipboard {
+    pub fn get() -> Result<Self, Box<Error + Send + Sync>> {
+        Ok(WindowsClipboard { _priv: () })
+    }
+
+    pub fn copy(&mut self, item: &Item) -> Result<(), Box<Error + Send + Sync>> {
+        unsafe {
+            let text = match *item {
+                Item::Text(ref t) => t,
+                _ => return Ok(()),
+            };
+            let _guard = ClipboardGuard::default();
+
+            let clip_buf = GlobalLockHandle::new(GlobalAlloc(GMEM_MOVEABLE, text.len()));
+            ptr::copy_nonoverlapping(text.as_ptr(), clip_buf.get(), text.len());
+
+            let empty_result = EmptyClipboard();
+            assert_ne!(empty_result, FALSE);
+            SetClipboardData(ClipboardFormats::CF_UNICODETEXT as UINT, clip_buf);
+            Ok(())
+        }
+    }
+
+    pub fn copy_items(&mut self, items: &[Item]) -> Result<()> {
+        unimplemented!();
+    }
+
+    pub fn get_paste_text(&self) -> Result<&str, Box<Error + Send + Sync>> {
+        use std::slice;
+        unsafe {
+            let _guard = ClipboardGuard::default();
+            let clip_buf = GlobalLockGuard::new(GetClipboardData(CF_UNICODETEXT));
+
+            Ok(CStr::from_ptr(clip_buf.get()).to_str().unwrap_or(""))
+        }
+    }
+
+    pub fn get_items(&self) -> &[Item] {
+        unimplemented!();
+    }
+}
+
+pub trait ClipboardExt {}
+
+impl ClipboardExt for SuperClipboard {}
+
 struct ClipboardGuard;
+
 impl Default for ClipboardGuard {
     fn default() -> Self {
         let result = OpenClipboard(ptr::null_mut());
@@ -95,47 +144,3 @@ impl Drop for GlobalLockGuard {
         self.ptr = ptr::null_mut();
     }
 }
-
-impl Clipboard for WindowsClipboard {
-    fn get() -> Result<Self, Box<Error + Send + Sync>> {
-        Ok(WindowsClipboard { _priv: () })
-    }
-
-    fn copy(&mut self, item: &Item) -> Result<(), Box<Error + Send + Sync>> {
-        unsafe {
-            let text = match *item {
-                Item::Text(ref t) => t,
-                _ => return Ok(()),
-            };
-            let _guard = ClipboardGuard::default();
-
-            let clip_buf = GlobalLockHandle::new(GlobalAlloc(GMEM_MOVEABLE, text.len()));
-            ptr::copy_nonoverlapping(text.as_ptr(), clip_buf.get(), text.len());
-
-            let empty_result = EmptyClipboard();
-            assert_ne!(empty_result, FALSE);
-            SetClipboardData(ClipboardFormats::CF_UNICODETEXT as UINT, clip_buf);
-            Ok(())
-        }
-    }
-
-    fn copy_items(&mut self, items: &[Item]) -> Result<()> {
-        unimplemented!();
-    }
-
-    fn get_paste_text(&self) -> Result<&str, Box<Error + Send + Sync>> {
-        use std::slice;
-        unsafe {
-            let _guard = ClipboardGuard::default();
-            let clip_buf = GlobalLockGuard::new(GetClipboardData(CF_UNICODETEXT));
-
-            Ok(CStr::from_ptr(clip_buf.get()).to_str().unwrap_or(""))
-        }
-    }
-
-    fn get_items(&self) -> &[Item] {
-        unimplemented!();
-    }
-}
-
-impl ClipboardExt for WindowsClipboard {}

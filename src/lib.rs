@@ -1,89 +1,63 @@
 extern crate libc;
 
 #[cfg(target_os = "macos")]
-extern crate cocoa;
-
-#[cfg(target_os = "windows")]
-extern crate winapi;
-
-#[cfg(target_os = "windows")]
-extern crate user32;
-
-#[cfg(target_os = "windows")]
-extern crate kernel32;
-
-#[cfg(target_os = "linux")]
-extern crate x11_dl;
-
-#[cfg(target_os = "macos")]
 mod mac_clipboard;
 
-#[cfg(target_os = "windows")]
+#[cfg(target_os = "macos")]
+use mac_clipboard as inner;
+
+#[cfg(windows)]
 mod windows_clipboard;
 
-#[cfg(any(target_os = "linux",
-          target_os = "dragonfly",
-          target_os = "freebsd",
-          target_os = "openbsd"))]
+#[cfg(windows)]
+use windows_clipboard as inner;
+
+#[cfg(all(not(target_os = "macos"), unix))]
 mod unix_clipboard;
 
-#[cfg(not(any(target_os = "linux",
-              target_os = "dragonfly",
-              target_os = "freebsd",
-              target_os = "openbsd",
-              target_os = "windows",
-              target_os = "macos")))]
+#[cfg(all(not(target_os = "macos"), unix))]
+use unix_clipboard as inner;
+
+#[cfg(not(any(windows, unix, target_os = "macos")))]
 mod dummy_clipboard;
 
-#[cfg(target_os = "macos")]
-pub type NativeClipboard = mac_clipboard::CocoaClipboard;
+#[cfg(not(any(windows, unix, target_os = "macos")))]
+use dummy_clipboard as inner;
 
-#[cfg(target_os = "macos")]
-pub use mac_clipboard::ClipboardExt;
-
-#[cfg(target_os = "windows")]
-pub type NativeClipboard = windows_clipboard::WindowsClipboard;
-
-#[cfg(target_os = "windows")]
-pub use windows_clipboard::ClipboardExt;
-
-#[cfg(any(target_os = "linux",
-          target_os = "dragonfly",
-          target_os = "freebsd",
-          target_os = "openbsd"))]
-pub type NativeClipboard = unix_clipboard::UnixClipboard;
-
-#[cfg(any(target_os = "linux",
-          target_os = "dragonfly",
-          target_os = "freebsd",
-          target_os = "openbsd"))]
-pub use unix_clipboard::ClipboardExt;
-
-#[cfg(not(any(target_os = "linux",
-              target_os = "dragonfly",
-              target_os = "freebsd",
-              target_os = "openbsd",
-              target_os = "windows",
-              target_os = "macos")))]
-pub type NativeClipboard = dummy_clipboard::DummyClipboard;
-
-#[cfg(not(any(target_os = "linux",
-              target_os = "dragonfly",
-              target_os = "freebsd",
-              target_os = "openbsd",
-              target_os = "windows",
-              target_os = "macos")))]
-pub use dummy_clipboard::ClipboardExt;
+pub use inner::ClipboardExt;
 
 use std::borrow::Cow;
-use std::error::Error;
+use std::error::Error as StdError;
+use std::fmt;
 
-pub trait Clipboard: Sized {
-    fn get() -> Result<Self>;
-    fn copy(&mut self, item: &Item) -> Result<()>;
-    fn copy_items(&mut self, items: &[Item]) -> Result<()>;
-    fn get_paste_text(&self) -> Result<&str>;
-    fn get_items(&self) -> Cow<[Item]>;
+#[derive(Debug)]
+pub struct Clipboard(inner::Clipboard);
+
+impl Clipboard {
+    #[inline]
+    pub fn get() -> Result<Self> {
+        inner::Clipboard::get().map(|cb| Clipboard(cb))
+    }
+
+    #[inline]
+    pub fn copy(&mut self, item: &Item) -> Result<()> {
+        self.0.copy(item)
+    }
+
+    #[inline]
+    pub fn copy_items(&mut self, items: &[Item]) -> Result<()> {
+        self.0.copy_items(items)
+    }
+
+    #[inline]
+    pub fn get_paste_text(&self) -> Result<&str> {
+        self.0.get_paste_text()
+    }
+
+    #[inline]
+    pub fn get_items(&self) -> Cow<[Item]> {
+        self.0.get_items()
+    }
 }
 
 pub trait Image {
@@ -105,20 +79,38 @@ pub enum Item<'a> {
     Other(*mut libc::c_void),
 }
 
-pub type Result<T> = ::std::result::Result<T, Box<Error + Send + Sync>>;
+#[derive(Debug)]
+pub struct Error(inner::Error);
 
-#[cfg(all(test, any(target_os = "macos",
-                    target_os = "windows",
-                    target_os = "linux",
-                    target_os = "dragonfly",
-                    target_os = "freebsd",
-                    target_os = "openbsd")))]
+impl From<inner::Error> for Error {
+    #[inline]
+    fn from(e: inner::Error) -> Self {
+        Error(e)
+    }
+}
+
+impl fmt::Display for Error {
+    #[inline]
+    fn fmt(&self, fmtr: &mut fmt::Formatter) -> fmt::Result {
+        unimplemented!()
+    }
+}
+
+impl StdError for Error {
+    fn description(&self) -> &str {
+        "Something bad happened"
+    }
+}
+
+pub type Result<T> = ::std::result::Result<T, self::Error>;
+
+#[cfg(all(test, any(unix, windows)))]
 mod tests {
-    use {Clipboard, Item, NativeClipboard};
+    use {Clipboard, Item};
     #[test]
     fn test_native_clipboard() {
         const TEST_TEXT: &'static str = "BoomShakalaka";
-        let mut clipboard = NativeClipboard::get().unwrap();
+        let mut clipboard = Clipboard::get().unwrap();
 
         // Save the current clipboard text
         let current_clipboard_text = clipboard.get_paste_text().unwrap().to_string();

@@ -1,34 +1,30 @@
-use cocoa::appkit::{NSPasteboard, NSPasteboardTypeString};
-use cocoa::base::{id, nil};
-use cocoa::foundation::{NSArray, NSData, NSFastEnumeration, NSString, NSUInteger};
+extern crate cocoa;
+
+use {Clipboard as SuperClipboard, Item, Result};
+use self::cocoa::appkit::{NSPasteboard, NSPasteboardTypeString};
+use self::cocoa::base::{id, nil};
+use self::cocoa::foundation::{NSArray, NSData, NSFastEnumeration, NSString, NSUInteger};
 use std::borrow::Cow;
 use std::ffi::CStr;
-use {Clipboard, Item, Result};
-
-pub trait ClipboardExt: Clipboard {
-    fn clipboard_with_name(&self, name: &str) -> Self;
-    fn get_items_nsarray(&self) -> id;
-    fn get_raw_clipboard(&self) -> id;
-}
 
 #[derive(Debug)]
-pub struct CocoaClipboard(id);
+pub struct Clipboard(id);
 
-impl Clipboard for CocoaClipboard {
-    fn get() -> Result<Self> {
+impl Clipboard {
+    pub fn get() -> Result<Self> {
         let pboard = unsafe { NSPasteboard::generalPasteboard(nil) };
         if pboard.is_null() {
-            Err(From::from("could not get pasteboard"))
+            Err(Error::from("could not get pasteboard").into())
         } else {
-            Ok(CocoaClipboard(pboard))
+            Ok(Clipboard(pboard))
         }
     }
 
-    fn copy(&mut self, item: &Item) -> Result<()> {
+    pub fn copy(&mut self, item: &Item) -> Result<()> {
         self.copy_items(&[*item])
     }
 
-    fn copy_items(&mut self, items: &[Item]) -> Result<()> {
+    pub fn copy_items(&mut self, items: &[Item]) -> Result<()> {
         let items = items
             .iter()
             .map(|i| i.native_representation())
@@ -41,14 +37,14 @@ impl Clipboard for CocoaClipboard {
         Ok(())
     }
 
-    fn get_paste_text(&self) -> Result<&str> {
+    pub fn get_paste_text(&self) -> Result<&str> {
         unsafe {
             let text = NSPasteboard::stringForType(self.0, NSPasteboardTypeString);
             Ok(CStr::from_ptr(text.UTF8String()).to_str().unwrap_or(""))
         }
     }
 
-    fn get_items(&self) -> Cow<[Item]> {
+    pub fn get_items(&self) -> Cow<[Item]> {
         unsafe {
             self.0
                 .pasteboardItems()
@@ -59,7 +55,13 @@ impl Clipboard for CocoaClipboard {
     }
 }
 
-impl ClipboardExt for CocoaClipboard {
+pub trait ClipboardExt {
+    fn clipboard_with_name(&self, name: &str) -> Self;
+    fn get_items_nsarray(&self) -> id;
+    fn get_raw_clipboard(&self) -> id;
+}
+
+impl ClipboardExt for SuperClipboard {
     fn clipboard_with_name(&self, name: &str) -> Self {
         unimplemented!();
     }
@@ -68,8 +70,19 @@ impl ClipboardExt for CocoaClipboard {
         unimplemented!();
     }
 
+    #[inline]
     fn get_raw_clipboard(&self) -> id {
-        self.0
+        (self.0).0
+    }
+}
+
+#[derive(Debug)]
+pub struct Error;
+
+impl From<&'static str> for Error {
+    #[inline]
+    fn from(_: &'static str) -> Self {
+        Error
     }
 }
 
