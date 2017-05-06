@@ -23,7 +23,7 @@ pub struct DummyClipboard {
 }
 
 impl Clipboard for DummyClipboard {
-    fn get() -> Result<Self> where Self: Sized {
+    fn get() -> Result<Self> {
         debug_println!("Calling DummyClipboard::get()");
         Ok(DummyClipboard {
             _priv: ()
