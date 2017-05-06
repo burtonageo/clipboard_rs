@@ -6,7 +6,7 @@ use winapi::minwindef::{FALSE, HGLOBAL, UINT};
 use {Clipboard, Item, Result};
 
 bitflags! {
-    pub flags GlobalAllocFlags: UINT {
+    flags GlobalAllocFlags: UINT {
         const GHND = GMEM_MOVEABLE | GMEM_ZEROINIT,
         const GMEM_FIXED = 0x0000,
         const GMEM_MOVEABLE = 0x0002,
@@ -17,7 +17,7 @@ bitflags! {
 
 #[repr(u32)]
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-pub enum ClipboardFormats {
+enum ClipboardFormats {
     CF_BITMAP = 0x0002,
     CF_DIB = 0x0008,
     CF_DIBV5 = 0x0011,
