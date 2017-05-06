@@ -57,6 +57,14 @@ pub use dummy_clipboard::ClipboardExt;
 use std::borrow::Cow;
 use std::error::Error;
 
+pub trait Clipboard: Sized {
+    fn get() -> Result<Self>;
+    fn copy(&mut self, item: &Item) -> Result<()>;
+    fn copy_items(&mut self, items: &[Item]) -> Result<()>;
+    fn get_paste_text(&self) -> Result<&str>;
+    fn get_items(&self) -> Cow<[Item]>;
+}
+
 pub trait Image {
     fn bytes(&self) -> &[u8];
     fn from_bytes(bytes: &[u8]) -> Result<Self> where Self: Sized;
@@ -74,14 +82,6 @@ pub enum Item<'a> {
     Image(&'a Image),
     Sound(&'a Sound),
     Other(*mut libc::c_void)
-}
-
-pub trait Clipboard {
-    fn get() -> Result<Self> where Self: Sized;
-    fn copy(&mut self, item: &Item) -> Result<()>;
-    fn copy_items(&mut self, items: &[Item]) -> Result<()>;
-    fn get_paste_text(&self) -> Result<&str>;
-    fn get_items(&self) -> Cow<[Item]>;
 }
 
 pub type Result<T> = ::std::result::Result<T, Box<Error + Send + Sync>>;
